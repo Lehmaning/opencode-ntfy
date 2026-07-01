@@ -1,0 +1,9 @@
+{
+  "name": "opencode-ntfy",
+  "version": "3.1.0",
+  "description": "ntfy.sh push notification plugin for OpenCode",
+  "private": true,
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.17.4"
+  }
+}

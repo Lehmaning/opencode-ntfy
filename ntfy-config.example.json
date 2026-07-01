@@ -1,0 +1,10 @@
+{
+  "serverUrl": "https://ntfy.sh",
+  "topic": "your-topic-here",
+  "notifyOnIdle": true,
+  "notifyOnError": true,
+  "notifyOnQuestion": true,
+  "subscribe": {
+    "enabled": false
+  }
+}
