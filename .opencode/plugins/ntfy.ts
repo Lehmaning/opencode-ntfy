@@ -56,8 +56,8 @@ const plugin: Plugin = async ({ client }) => {
     return ev?.properties?.sessionID || ev?.properties?.info?.id || ""
   }
 
-  function getReplyTopic(sid) {
-    for (const [t, e] of replies) { if (e.sessionId === sid) return t }
+  function buildReplyHint(sid) {
+    for (const [t, e] of replies) { if (e.sessionId === sid) return "\nReply: " + cfg.serverUrl + "/" + t }
     return ""
   }
 
@@ -84,24 +84,28 @@ const plugin: Plugin = async ({ client }) => {
         for (const [k, v] of notified) { if (Date.now() - v > 60000) notified.delete(k) }
       }
 
-      const rt = getReplyTopic(id)
-      const replyHint = rt ? "\nReply: " + cfg.serverUrl + "/" + rt : ""
+      // Only compute reply hint when we're about to send a notification
+      let replyHint = ""
 
-      // session.idle (deprecated but works)
-      if (type === "session.idle" && cfg.notifyOnIdle && id) {
+      // session.status idle (official way to detect completion)
+      if (type === "session.status" && cfg.notifyOnIdle && id && event?.properties?.status?.type === "idle") {
+        replyHint = buildReplyHint(id)
         await send("Session done", "Session " + id.slice(0,12) + replyHint, ["white_check_mark"], "default")
       }
 
       // session.error
       if (type === "session.error" && cfg.notifyOnError && id) {
+        replyHint = buildReplyHint(id)
         await send("Session error", "Session " + id.slice(0,12) + replyHint, ["rotating_light"], "high")
       }
 
       // question/permission
       if (type === "question.asked" && cfg.notifyOnQuestion) {
+        replyHint = buildReplyHint(id)
         await send("Question for you", "OpenCode needs input" + replyHint, ["question"], "high")
       }
       if (type === "permission.asked") {
+        replyHint = buildReplyHint(id)
         await send("Permission needed", "OpenCode needs input" + replyHint, ["warning"], "high")
       }
     },
