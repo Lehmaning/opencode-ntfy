@@ -14,7 +14,7 @@ async function loadConfig() {
 }
 
 const plugin: Plugin = async ({ client }) => {
-  const cfg = loadConfig()
+  const cfg = await loadConfig()
   if (!cfg.topic) { console.log("[ntfy] no topic"); return {} }
 
   const DEDUP_MS = 5000
