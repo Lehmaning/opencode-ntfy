@@ -87,8 +87,10 @@ const plugin: Plugin = async ({ client }) => {
       // Only compute reply hint when we're about to send a notification
       let replyHint = ""
 
-      // session.status idle (official way to detect completion)
-      if (type === "session.status" && cfg.notifyOnIdle && id && event?.properties?.status?.type === "idle") {
+      // session.status idle + session.idle (both fire in different versions)
+      const isIdle = (type === "session.status" && event?.properties?.status?.type === "idle") ||
+                     type === "session.idle"
+      if (isIdle && cfg.notifyOnIdle && id) {
         replyHint = buildReplyHint(id)
         await send("Session done", "Session " + id.slice(0,12) + replyHint, ["white_check_mark"], "default")
       }
