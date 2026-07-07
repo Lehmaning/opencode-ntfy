@@ -65,6 +65,7 @@ const plugin: Plugin = async ({ client }) => {
     event: async ({ event }) => {
       const type = event?.type
       const id = getSid(event)
+      client.app.log({ body: { service: "ntfy", level: "debug", message: "event received: " + type + " id: " + id.slice(0,12) + " props: " + JSON.stringify(event?.properties) } })
 
       // Track sessions for reply topics
       if (type === "session.created" && id) {
