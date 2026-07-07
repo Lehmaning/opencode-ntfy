@@ -15,7 +15,7 @@ async function loadConfig() {
 
 const plugin: Plugin = async ({ client }) => {
   const cfg = await loadConfig()
-  if (!cfg.topic) { console.log("[ntfy] no topic"); return {} }
+  if (!cfg.topic) { client.app.log({ body: { service: "ntfy", level: "warn", message: "no topic configured" } }); return {} }
 
   const DEDUP_MS = 5000
   const notified = new Map()
@@ -49,7 +49,7 @@ const plugin: Plugin = async ({ client }) => {
       const h = { "X-Title": title, "X-Priority": String(prio || 3), "X-Tags": (tags || []).join(",") }
       if (cfg.auth) h["Authorization"] = "Basic " + Buffer.from(cfg.auth).toString("base64")
       await fetch(cfg.serverUrl + "/" + cfg.topic, { method: "POST", body: msg, headers: h })
-    } catch (e) { console.log("[ntfy] send error:", String(e)) }
+    } catch (e) { client.app.log({ body: { service: "ntfy", level: "error", message: "send error: " + String(e) } }) }
   }
 
   function getSid(ev) {
@@ -87,10 +87,8 @@ const plugin: Plugin = async ({ client }) => {
       // Only compute reply hint when we're about to send a notification
       let replyHint = ""
 
-      // session.status idle + session.idle (both fire in different versions)
-      const isIdle = (type === "session.status" && event?.properties?.status?.type === "idle") ||
-                     type === "session.idle"
-      if (isIdle && cfg.notifyOnIdle && id) {
+      // session.idle - per official docs: https://opencode.ai/docs/plugins/#send-notifications
+      if (type === "session.idle" && cfg.notifyOnIdle && id) {
         replyHint = buildReplyHint(id)
         await send("Session done", "Session " + id.slice(0,12) + replyHint, ["white_check_mark"], "default")
       }
